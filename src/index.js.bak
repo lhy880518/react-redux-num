@@ -1,0 +1,112 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
+
+import registerServiceWorker from './registerServiceWorker';
+import { createStore } from 'redux';
+/*
+  store: React.js 프로젝트에서 사용하는 모든 동적 데이터들을 담아두는 곳 입니다.
+  action: 어떤 변화가 일어나야 할 지 나타내는 객체입니다.
+  reducer: action 객체를 받았을 때, 데이터를 어떻게 바꿀지 처리할지 정의하는 객체입니다.
+*/
+/*
+  액션 작성하기
+
+  어떤 변화가 일어나야 할 지 알려주는 객체
+*/
+
+const INCREMENT = "INCREMENT";
+
+const increase = (diff) => {
+  return {
+    type:INCREMENT,
+    addBy: diff
+  };
+};
+
+
+/*
+  리듀서 작성하기
+
+  우선 데이터의 초기 상태를 정의하고 arrow function 을 통하여 reducer를 만듭니다.
+*/
+const initialState = {
+  value:0
+};
+
+const counterReducer = (state = initialState, action) => {
+  switch(action.type){
+    case INCREMENT:
+    return Object.assign({}, state, {
+      value: state.value + action.addBy
+    });
+    default:
+    return state;
+  }
+};
+
+/*
+  Store 생성하기
+
+  store를 만들때는 createStore() 메소드를 사용하며 reducer가 인수로 사용됩니다.
+*/
+
+const store = createStore(counterReducer);
+
+class App extends React.Component {
+  constructor(props){
+    super(props);
+    this.onClick = this.onClick.bind(this);
+  }
+  onClick(){
+    this.props.store.dispatch(increase(1));
+  }
+
+  render(){
+    let centerStyle = {
+      position:'fixed',
+      top:'50%',
+      left:'50%',
+      transform:'translate(-50%, -50%)',
+      WebkitUserSelect:'none',
+      MozUserSelect:'none',
+      MsUserSelect:'none',
+      userSelect:'none',
+      cursor:'pointer'
+    };
+    return(
+      <div
+        onClick={ this.onClick }
+        style ={ centerStyle }
+      >
+        <h1> {this.props.store.getState().value} </h1>
+      </div>
+    );
+  }
+  /*
+    store.dispatch(ACTION) : 상태값을 수정 할 때 사용되는 메소드입니다.
+    인수로는 action 이 전달됩니다. 위 컴포넌트에서는 사전에 만들어둔
+    increase 함수가 action 객체를 반환합니다.
+  */
+
+}
+//이 컴포넌트는 렌더링 될 때 store를 props로 전달 받습니다.
+
+/*
+  렌더링 하기
+*/
+
+const render = () => {
+  const appElement = document.getElementById('root');
+  //store를 App 컴포넌트의 props로 전달 해 주었다.
+  ReactDOM.render(<App store={store}></App>, appElement);
+};
+
+/*
+  store.subscribe(LISTENER) : dispatch 메소드가 실행되면 리스너 함수가
+  실행됩니다. 즉 데이터에 변동이 있을때마다 리렌더링 하도록 설정합니다.
+*/
+store.subscribe(render);
+render();
+
+
+registerServiceWorker();
